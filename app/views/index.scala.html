@@ -1,0 +1,35 @@
+@(showLineNumbers: Boolean, upperCase: Boolean)(implicit request: RequestHeader)
+
+@main("Example of Play!'s Iteratees, Enumerators and Enumeratees") {
+    
+    <h3>The Tragedy of Hamlet streamed by the server</h3>
+    
+    <p>(text taken over from <a href="http://shakespeare.mit.edu/hamlet/full.html">shakespeare.mit.edu</a>)</p>
+    <p>
+      <a href="@routes.IndexController.index(false, false)">Normal text</a> |
+      <a href="@routes.IndexController.index(false, true)">Uppercase text</a> |
+      <a href="@routes.IndexController.index(true, false)">Interleaved line counting stream</a>
+    </p>
+    
+    <hr/>
+    <div id="events"></div>
+    
+    <!-- Client side code for WebSocket serving data from the server -->
+    <script type="text/javascript" charset="utf-8">
+    	var lineNumber = 0
+        $(function() {
+            var WS = window['MozWebSocket'] ? MozWebSocket : WebSocket
+            var sock = new WS("@routes.IndexController.feed(showLineNumbers, upperCase).webSocketURL()")
+            
+            sock.onmessage = function(event) {
+            	if (lineNumber % 10 == 0) {
+            	  $('#events').html("<p>" + event.data + "</p>")
+            	} else {
+            	  $('#events').append("<p>" + event.data + "</p>")
+            	}
+            	lineNumber = lineNumber + 1
+            }
+        })
+    
+    </script>
+}
